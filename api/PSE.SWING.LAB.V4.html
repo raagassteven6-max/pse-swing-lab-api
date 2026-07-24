@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSE Swing Lab — EODHD Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+:root{--bg-deep:#0f0f1a;--bg-card:rgba(255,255,255,0.04);--bg-card-hover:rgba(255,255,255,0.07);--border:rgba(255,255,255,0.08);--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;--accent-cyan:#22d3ee;--accent-purple:#a78bfa;--accent-pink:#f472b6;--accent-green:#34d399;--accent-red:#fb7185;--accent-orange:#fbbf24;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-deep);color:var(--text-primary);min-height:100vh;overflow-x:hidden}
+.bg-gradient{position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse 80% 50% at 20% 40%,rgba(34,211,238,0.08) 0%,transparent 50%),radial-gradient(ellipse 60% 40% at 80% 60%,rgba(167,139,250,0.08) 0%,transparent 50%),radial-gradient(ellipse 50% 50% at 50% 100%,rgba(244,114,182,0.05) 0%,transparent 50%);pointer-events:none;z-index:0}
+.container{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px}
+.header{text-align:center;padding:32px 0 24px}
+.header h1{font-size:2.4rem;font-weight:800;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-purple),var(--accent-pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-1px}
+.header p{color:var(--text-secondary);font-size:.95rem;margin-top:8px}
+.header .badge{display:inline-block;background:linear-gradient(135deg,rgba(34,211,238,0.15),rgba(167,139,250,0.15));border:1px solid rgba(34,211,238,0.2);color:var(--accent-cyan);font-size:.7rem;font-weight:700;padding:4px 12px;border-radius:20px;margin-top:12px;text-transform:uppercase;letter-spacing:1px}
+.tabs{display:flex;gap:8px;justify-content:center;margin:24px 0 32px;flex-wrap:wrap}
+.tab-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);padding:12px 28px;border-radius:14px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .3s ease;backdrop-filter:blur(10px)}
+.tab-btn:hover{background:var(--bg-card-hover);color:var(--text-primary);transform:translateY(-1px)}
+.tab-btn.active{background:linear-gradient(135deg,rgba(34,211,238,0.15),rgba(167,139,250,0.15));border-color:rgba(34,211,238,0.3);color:var(--accent-cyan);box-shadow:0 0 20px rgba(34,211,238,0.1)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;backdrop-filter:blur(20px);transition:all .3s ease}
+.card:hover{border-color:rgba(255,255,255,0.12)}
+.card-title{font-size:1.1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.card-title .icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}.header h1{font-size:1.6rem}}
+.input-group{margin-bottom:16px}
+.input-group label{display:block;font-size:.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.input-group input,.input-group select{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:12px;padding:12px 16px;color:var(--text-primary);font-size:.95rem;font-family:inherit;transition:all .2s}
+.input-group input:focus,.input-group select:focus{outline:none;border-color:var(--accent-cyan);box-shadow:0 0 0 3px rgba(34,211,238,0.1)}
+.input-group input::placeholder{color:var(--text-muted)}
+.btn{background:linear-gradient(135deg,var(--accent-cyan),var(--accent-purple));border:none;color:#0f0f1a;padding:14px 32px;border-radius:14px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .3s ease;display:inline-flex;align-items:center;gap:8px;font-family:inherit}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(34,211,238,0.25)}
+.btn:active{transform:translateY(0)}
+.btn-secondary{background:var(--bg-card-hover);color:var(--text-primary);border:1px solid var(--border)}
+.btn-secondary:hover{background:rgba(255,255,255,0.1);box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+.btn-sm{padding:8px 18px;font-size:.8rem;border-radius:10px}
+.chart-container{background:rgba(0,0,0,0.3);border-radius:16px;border:1px solid var(--border);overflow:hidden;position:relative}
+.chart-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+.chart-header .ticker{font-size:1.3rem;font-weight:800}
+.chart-header .price{font-size:1.5rem;font-weight:800}
+.chart-header .price.up{color:var(--accent-green)}
+.chart-header .price.down{color:var(--accent-red)}
+.chart-header .change{font-size:.85rem;font-weight:600;padding:4px 10px;border-radius:8px}
+.chart-header .change.up{background:rgba(52,211,153,0.15);color:var(--accent-green)}
+.chart-header .change.down{background:rgba(251,113,133,0.15);color:var(--accent-red)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+@media(max-width:700px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-box{background:rgba(0,0,0,0.2);border-radius:12px;padding:14px;text-align:center;border:1px solid var(--border)}
+.stat-box .stat-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-box .stat-value{font-size:1.1rem;font-weight:700}
+.signal-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:10px;font-size:.8rem;font-weight:700}
+.signal-buy{background:rgba(52,211,153,0.15);color:var(--accent-green);border:1px solid rgba(52,211,153,0.3)}
+.signal-sell{background:rgba(251,113,133,0.15);color:var(--accent-red);border:1px solid rgba(251,113,133,0.3)}
+.signal-hold{background:rgba(251,191,36,0.15);color:var(--accent-orange);border:1px solid rgba(251,191,36,0.3)}
+.result-card{background:rgba(0,0,0,0.25);border-radius:14px;padding:20px;border:1px solid var(--border)}
+.result-card .result-title{font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.result-card .result-value{font-size:1.8rem;font-weight:800}
+.result-card .result-value.positive{color:var(--accent-green)}
+.result-card .result-value.negative{color:var(--accent-red)}
+.result-card .result-sub{font-size:.8rem;color:var(--text-muted);margin-top:4px}
+.trade-table{width:100%;border-collapse:collapse;margin-top:12px}
+.trade-table th{text-align:left;padding:10px 12px;font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+.trade-table td{padding:10px 12px;font-size:.85rem;border-bottom:1px solid rgba(255,255,255,0.03)}
+.trade-table tr:hover td{background:rgba(255,255,255,0.02)}
+.section{display:none}
+.section.active{display:block;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:40px;color:var(--text-muted)}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent-cyan);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.api-config{background:linear-gradient(135deg,rgba(34,211,238,0.08),rgba(167,139,250,0.08));border:1px solid rgba(34,211,238,0.2);border-radius:16px;padding:20px;margin-bottom:20px}
+.api-config h3{color:var(--accent-cyan);font-size:1rem;margin-bottom:12px}
+.api-config p{font-size:.85rem;color:var(--text-secondary);line-height:1.6;margin-bottom:12px}
+.api-config code{background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;font-family:'SF Mono',monospace;font-size:.8rem;color:var(--accent-pink)}
+.api-config .warning{background:rgba(251,113,133,0.08);border:1px solid rgba(251,113,133,0.2);border-radius:10px;padding:12px;margin-top:12px}
+.api-config .warning-title{color:var(--accent-red);font-size:.8rem;font-weight:700;margin-bottom:4px}
+.api-config .warning-text{color:var(--text-secondary);font-size:.75rem;line-height:1.5}
+.footer{text-align:center;padding:40px 0 20px;color:var(--text-muted);font-size:.8rem}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg-deep)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.15)}
+.mode-toggle{display:flex;gap:8px;margin-bottom:16px}
+.mode-btn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s}
+.mode-btn.active{background:linear-gradient(135deg,rgba(34,211,238,0.15),rgba(167,139,250,0.15));border-color:rgba(34,211,238,0.3);color:var(--accent-cyan)}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.status-live{background:var(--accent-green);box-shadow:0 0 8px var(--accent-green)}
+.status-mock{background:var(--accent-orange)}
+.call-count{font-size:.75rem;color:var(--text-muted);margin-top:8px;text-align:center}
+</style>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="container">
+<div class="header">
+<h1>🇵🇭 PSE Swing Lab</h1>
+<p>Strategy Builder & Backtester — EODHD Edition</p>
+<div class="badge">EODHD API · Real PSE Data · No Google Sheets Needed</div>
+</div>
+<div class="tabs">
+<button class="tab-btn active" onclick="showTab('tracker')">📊 Live Tracker</button>
+<button class="tab-btn" onclick="showTab('backtest')">🧪 Strategy Backtester</button>
+<button class="tab-btn" onclick="showTab('setup')">🔌 API Setup</button>
+</div>
+<div class="api-config" id="apiBanner">
+<h3>🔌 EODHD API Configuration</h3>
+<div class="mode-toggle">
+<button class="mode-btn active" id="modeMock" onclick="setDataMode('mock')"><span class="status-dot status-mock"></span>Demo Mode</button>
+<button class="mode-btn" id="modeLive" onclick="setDataMode('live')"><span class="status-dot status-live"></span>EODHD Live</button>
+</div>
+<p id="apiStatusText">Currently using <strong>simulated data</strong>. Paste your EODHD API key below and switch to Live Mode for real PSE data.</p>
+<div class="input-group" style="margin-bottom:12px">
+<label>Your EODHD API Key</label>
+<input type="password" id="apiKey" placeholder="Paste your EODHD API key here" onchange="saveApiKey()">
+</div>
+<div class="input-group" style="margin-bottom:0">
+<label>Date Range (Free plan = past year only)</label>
+<div style="display:flex;gap:10px">
+<input type="date" id="fromDate" style="flex:1">
+<input type="date" id="toDate" style="flex:1">
+</div>
+</div>
+<div class="call-count" id="callCount">API calls today: 0 / 20 (Free plan limit)</div>
+<div class="warning">
+<div class="warning-title">⚠️ Security Notice</div>
+<div class="warning-text">Your API key is stored in browser localStorage only. If you deploy this to GitHub Pages, the key will be visible in your repo. For free plan (20 calls/day), risk is minimal. Consider using a proxy server for production use.</div>
+</div>
+</div>
+<div id="tracker" class="section active">
+<div class="grid-2">
+<div class="card">
+<div class="card-title"><div class="icon" style="background:linear-gradient(135deg,rgba(34,211,238,0.2),rgba(34,211,238,0.05));color:var(--accent-cyan)">📡</div>Stock Selector</div>
+<div class="input-group">
+<label>PSE Stock Ticker</label>
+<select id="tickerSelect" onchange="updateTicker()">
+<option value="BDO.XPHS">BDO (BDO Unibank)</option>
+<option value="SM.XPHS">SM (SM Investments)</option>
+<option value="ALI.XPHS">ALI (Ayala Land)</option>
+<option value="AC.XPHS">AC (Ayala Corp)</option>
+<option value="AREIT.XPHS">AREIT (Ayala REIT)</option>
+<option value="TEL.XPHS">TEL (PLDT)</option>
+<option value="MER.XPHS">MER (Meralco)</option>
+<option value="BPI.XPHS">BPI (Bank of PI)</option>
+<option value="GLO.XPHS">GLO (Globe Telecom)</option>
+<option value="AP.XPHS">AP (Aboitiz Power)</option>
+<option value="DMC.XPHS">DMC (DMCI Holdings)</option>
+<option value="AGI.XPHS">AGI (Alliance Global)</option>
+<option value="URC.XPHS">URC (Universal Robina)</option>
+<option value="SMCI.XPHS">SMCI (SMCI)</option>
+<option value="SCC.XPHS">SCC (Semirara Mining)</option>
+</select>
+</div>
+<div class="input-group">
+<label>Or type custom ticker (.XPHS suffix)</label>
+<input type="text" id="customTicker" placeholder="e.g., BDO.XPHS, SM.XPHS" oninput="updateCustomTicker()">
+</div>
+<div style="display:flex;gap:10px;margin-top:8px">
+<button class="btn" onclick="loadStockData()">🔄 Load Data</button>
+<button class="btn btn-secondary btn-sm" onclick="toggleMA()">Toggle MA</button>
+</div>
+<div style="margin-top:20px;padding:14px;background:rgba(34,211,238,0.05);border-radius:12px;border:1px solid rgba(34,211,238,0.1)">
+<div style="font-size:.75rem;color:var(--text-muted);margin-bottom:6px">CURRENT SIGNAL</div>
+<div id="currentSignal" class="signal-badge signal-hold">⏳ Loading...</div>
+<div style="margin-top:10px;font-size:.8rem;color:var(--text-secondary);line-height:1.5" id="signalReason">Select a stock and load data to see the current moving average crossover signal.</div>
+</div>
+<div style="margin-top:16px">
+<div style="font-size:.75rem;color:var(--text-muted);margin-bottom:8px">INDICATORS</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px">
+<span style="background:rgba(167,139,250,0.15);color:var(--accent-purple);padding:4px 10px;border-radius:8px;font-size:.75rem;font-weight:600">20 EMA</span>
+<span style="background:rgba(34,211,238,0.15);color:var(--accent-cyan);padding:4px 10px;border-radius:8px;font-size:.75rem;font-weight:600">50 SMA</span>
+<span style="background:rgba(244,114,182,0.15);color:var(--accent-pink);padding:4px 10px;border-radius:8px;font-size:.75rem;font-weight:600">RSI(14)</span>
+<span style="background:rgba(251,191,36,0.15);color:var(--accent-orange);padding:4px 10px;border-radius:8px;font-size:.75rem;font-weight:600">Vol SMA20</span>
+</div>
+</div>
+</div>
+<div class="card" style="padding:0;overflow:hidden">
+<div class="chart-header">
+<div><div class="ticker" id="displayTicker">PSE:BDO</div><div style="font-size:.75rem;color:var(--text-muted);margin-top:2px" id="dataSourceLabel">Demo Data</div></div>
+<div style="text-align:right"><div class="price up" id="displayPrice">₱—</div><div class="change up" id="displayChange">—</div></div>
+</div>
+<div id="chart" style="height:320px"></div>
+<div class="stats-grid" style="padding:0 16px 16px">
+<div class="stat-box"><div class="stat-label">20 EMA</div><div class="stat-value" style="color:var(--accent-purple)" id="statEMA20">—</div></div>
+<div class="stat-box"><div class="stat-label">50 SMA</div><div class="stat-value" style="color:var(--accent-cyan)" id="statSMA50">—</div></div>
+<div class="stat-box"><div class="stat-label">RSI(14)</div><div class="stat-value" style="color:var(--accent-pink)" id="statRSI">—</div></div>
+<div class="stat-box"><div class="stat-label">Vol vs Avg</div><div class="stat-value" style="color:var(--accent-orange)" id="statVol">—</div></div>
+</div>
+</div>
+</div>
+<div class="card" style="margin-top:20px">
+<div class="card-title"><div class="icon" style="background:linear-gradient(135deg,rgba(52,211,153,0.2),rgba(52,211,153,0.05));color:var(--accent-green)">📋</div>Recent Price Data (Last 10 Days)</div>
+<div style="overflow-x:auto">
+<table class="trade-table" id="priceTable">
+<thead><tr><th>Date</th><th>Open</th><th>High</th><th>Low</th><th>Close</th><th>Volume</th><th>20 EMA</th><th>50 SMA</th><th>Signal</th></tr></thead>
+<tbody id="priceTableBody"></tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="backtest" class="section">
+<div class="grid-2">
+<div class="card">
+<div class="card-title"><div class="icon" style="background:linear-gradient(135deg,rgba(167,139,250,0.2),rgba(167,139,250,0.05));color:var(--accent-purple)">⚙️</div>Strategy Configuration</div>
+<div class="input-group">
+<label>Stock Ticker</label>
+<select id="btTicker">
+<option value="BDO.XPHS">BDO</option>
+<option value="SM.XPHS">SM</option>
+<option value="ALI.XPHS">ALI</option>
+<option value="AC.XPHS">AC</option>
+<option value="AREIT.XPHS">AREIT</option>
+<option value="TEL.XPHS">TEL</option>
+<option value="MER.XPHS">MER</option>
+<option value="BPI.XPHS">BPI</option>
+<option value="GLO.XPHS">GLO</option>
+<option value="AP.XPHS">AP</option>
+<option value="DMC.XPHS">DMC</option>
+<option value="AGI.XPHS">AGI</option>
+<option value="URC.XPHS">URC</option>
+<option value="SMCI.XPHS">SMCI</option>
+<option value="SCC.XPHS">SCC</option>
+</select>
+</div>
+<div class="grid-2" style="gap:12px">
+<div class="input-group"><label>Fast MA Period</label><input type="number" id="fastPeriod" value="20" min="5" max="50"></div>
+<div class="input-group"><label>Slow MA Period</label><input type="number" id="slowPeriod" value="50" min="20" max="200"></div>
+</div>
+<div class="input-group">
+<label>MA Type</label>
+<select id="maType"><option value="EMA">Exponential MA (EMA)</option><option value="SMA">Simple MA (SMA)</option></select>
+</div>
+<div class="grid-2" style="gap:12px">
+<div class="input-group"><label>Initial Capital (₱)</label><input type="number" id="initialCapital" value="100000" step="1000"></div>
+<div class="input-group"><label>Position Size (%)</label><input type="number" id="positionSize" value="100" min="10" max="100" step="5"></div>
+</div>
+<div class="input-group"><label>Stop Loss (%)</label><input type="number" id="stopLoss" value="5" min="1" max="20" step="0.5"></div>
+<div class="input-group"><label>Take Profit (%)</label><input type="number" id="takeProfit" value="10" min="2" max="50" step="0.5"></div>
+<button class="btn" onclick="runBacktest()" style="width:100%;justify-content:center;margin-top:8px">🚀 Run Backtest</button>
+</div>
+<div>
+<div class="grid-2" style="margin-bottom:16px">
+<div class="result-card"><div class="result-title">Total Return</div><div class="result-value" id="btReturn">—</div><div class="result-sub" id="btReturnSub">Run a backtest</div></div>
+<div class="result-card"><div class="result-title">Win Rate</div><div class="result-value" id="btWinRate">—</div><div class="result-sub" id="btWinRateSub">—</div></div>
+<div class="result-card"><div class="result-title">Total Trades</div><div class="result-value" id="btTrades">—</div><div class="result-sub" id="btTradesSub">—</div></div>
+<div class="result-card"><div class="result-title">Max Drawdown</div><div class="result-value" id="btDrawdown">—</div><div class="result-sub" id="btDrawdownSub">—</div></div>
+</div>
+<div class="card" style="padding:0;overflow:hidden">
+<div class="chart-header"><div><div style="font-size:1rem;font-weight:700">Equity Curve</div><div style="font-size:.75rem;color:var(--text-muted)">Portfolio value over time</div></div></div>
+<div id="equityChart" style="height:250px"></div>
+</div>
+</div>
+</div>
+<div class="card" style="margin-top:20px">
+<div class="card-title"><div class="icon" style="background:linear-gradient(135deg,rgba(251,191,36,0.2),rgba(251,191,36,0.05));color:var(--accent-orange)">📜</div>Trade Log</div>
+<div style="overflow-x:auto;max-height:400px;overflow-y:auto">
+<table class="trade-table" id="tradeLogTable">
+<thead><tr><th>#</th><th>Entry Date</th><th>Exit Date</th><th>Entry Price</th><th>Exit Price</th><th>Shares</th><th>P&L (₱)</th><th>P&L (%)</th><th>Result</th></tr></thead>
+<tbody id="tradeLogBody"><tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:30px">Run a backtest to see trade history</td></tr></tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="setup" class="section">
+<div class="grid-2">
+<div class="card">
+<div class="card-title"><div class="icon" style="background:linear-gradient(135deg,rgba(34,211,238,0.2),rgba(34,211,238,0.05));color:var(--accent-cyan)">📋</div>How EODHD Works</div>
+<div style="font-size:.85rem;color:var(--text-secondary);line-height:1.8">
+<p style="margin-bottom:12px"><strong>EODHD</strong> provides real end-of-day stock data for exchanges worldwide, including the Philippine Stock Exchange (PSE).</p>
+<p style="margin-bottom:12px"><strong>PSE ticker format:</strong> Add <code>.XPHS</code> suffix, e.g., <code>BDO.XPHS</code>, <code>GLO.XPHS</code></p>
+<p style="margin-bottom:12px"><strong>Free plan:</strong> 20 API calls/day, past year of historical data only.</p>
+<p style="margin-bottom:12px"><strong>Paid plans:</strong> Starting at ~$19.99/month for unlimited calls and full history.</p>
+<p><strong>Data update:</strong> PSE data updates 2-3 hours after market close (around 5:45 PM PST).</p>
+</div>
+</div>
+<div class="card">
+<div class="card-title"><div class="icon" style="background:linear-gradient(135deg,rgba(167,139,250,0.2),rgba(167,139,250,0.05));color:var(--accent-purple)">⚡</div>Setup Steps</div>
+<div style="font-size:.85rem;color:var(--text-secondary);line-height:1.8">
+<ol style="margin-left:18px">
+<li>Sign up at <a href="https://eodhd.com" target="_blank" style="color:var(--accent-cyan)">eodhd.com</a> (free plan available)</li>
+<li>Copy your API key from the dashboard</li>
+<li>Paste it in the API Key field above</li>
+<li>Set date range (free plan = past year only)</li>
+<li>Switch to <strong>EODHD Live</strong> mode</li>
+<li>Load any stock — real PSE data appears!</li>
+</ol>
+<div style="margin-top:14px;padding:12px;background:rgba(52,211,153,0.08);border-radius:10px;border:1px solid rgba(52,211,153,0.2)">
+<div style="font-size:.8rem;color:var(--accent-green);font-weight:600">✅ No Google Sheets Needed</div>
+<div style="font-size:.75rem;color:var(--text-secondary);margin-top:4px">Data flows directly from EODHD to your browser. No Sheets, no scripts, no deployment.</div>
+</div>
+</div>
+</div>
+</div>
+<div class="card" style="margin-top:20px">
+<div class="card-title"><div class="icon" style="background:linear-gradient(135deg,rgba(251,191,36,0.2),rgba(251,191,36,0.05));color:var(--accent-orange)">🔧</div>API Request Example</div>
+<div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:16px;overflow-x:auto">
+<code style="font-size:.75rem;line-height:1.8;display:block;white-space:pre;color:#a5b4fc">// EODHD API call for BDO historical data
+https://eodhd.com/api/eod/BDO.XPHS?api_token=YOUR_KEY&from=2025-07-01&to=2026-07-23&period=d&fmt=json
+
+// Response format:
+[
+  {
+    "date": "2026-07-22",
+    "open": 145.20,
+    "high": 147.50,
+    "low": 144.80,
+    "close": 146.30,
+    "adjusted_close": 146.30,
+    "volume": 1250000
+  }
+]</code>
+</div>
+</div>
+</div>
+<div class="footer">
+<p>PSE Swing Lab · EODHD Edition · Real Philippine Stock Data</p>
+</div>
+</div>
+<script>
+let dataMode='mock',apiKey=localStorage.getItem('eodhdApiKey')||'',currentTicker='BDO.XPHS',currentData=[],maLinesVisible=true,chartInstance=null,candleSeries=null,ema20Series=null,sma50Series=null,apiCallCount=parseInt(localStorage.getItem('eodhdCalls')||'0'),lastCallDate=localStorage.getItem('eodhdCallDate')||'';
+const STOCK_BASES={'BDO.XPHS':145,'SM.XPHS':900,'ALI.XPHS':32,'AC.XPHS':650,'AREIT.XPHS':38,'TEL.XPHS':1550,'MER.XPHS':380,'BPI.XPHS':120,'GLO.XPHS':1828,'AP.XPHS':38,'DMC.XPHS':12,'AGI.XPHS':12,'URC.XPHS':130,'SMCI.XPHS':22,'SCC.XPHS':28};
+window.addEventListener('DOMContentLoaded',()=>{if(apiKey)document.getElementById('apiKey').value=apiKey;initDates();checkCallReset();initChart();loadStockData();});
+function initDates(){const today=new Date();const yearAgo=new Date();yearAgo.setFullYear(today.getFullYear()-1);document.getElementById('toDate').value=today.toISOString().split('T')[0];document.getElementById('fromDate').value=yearAgo.toISOString().split('T')[0];}
+function checkCallReset(){const today=new Date().toISOString().split('T')[0];if(lastCallDate!==today){apiCallCount=0;localStorage.setItem('eodhdCallDate',today);localStorage.setItem('eodhdCalls','0');}updateCallDisplay();}
+function updateCallDisplay(){document.getElementById('callCount').textContent='API calls today: '+apiCallCount+' / 20 (Free plan limit)'+(apiCallCount>=20?' ⚠️ LIMIT REACHED':' ✓');}
+function incrementCallCount(){apiCallCount++;localStorage.setItem('eodhdCalls',apiCallCount.toString());updateCallDisplay();}
+function setDataMode(mode){dataMode=mode;document.getElementById('modeMock').classList.toggle('active',mode==='mock');document.getElementById('modeLive').classList.toggle('active',mode==='live');const txt=mode==='mock'?'Currently using <strong>simulated data</strong>. Paste your EODHD API key and switch to Live Mode for real PSE data.':'EODHD Live Mode active. Data fetched directly from EODHD API. Each stock load = 1 API call.';document.getElementById('apiStatusText').innerHTML=txt;document.getElementById('dataSourceLabel').textContent=mode==='mock'?'Demo Data':'Live · EODHD';}
+function saveApiKey(){apiKey=document.getElementById('apiKey').value.trim();localStorage.setItem('eodhdApiKey',apiKey);}
+function showTab(tabName){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(tabName).classList.add('active');event.target.classList.add('active');}
+function generateMockData(ticker,days=300){const base=STOCK_BASES[ticker]||100,data=[];let price=base;const now=new Date();for(let i=days;i>=0;i--){const date=new Date(now);date.setDate(date.getDate()-i);if(date.getDay()===0||date.getDay()===6)continue;const change=(Math.random()-.48)*price*.025;price=Math.max(price+change,base*.3);const open=price*(1+(Math.random()-.5)*.01),close=price,high=Math.max(open,close)*(1+Math.random()*.015),low=Math.min(open,close)*(1-Math.random()*.015),volume=Math.floor(1e6+Math.random()*5e6);data.push({time:date.toISOString().split('T')[0],open:parseFloat(open.toFixed(2)),high:parseFloat(high.toFixed(2)),low:parseFloat(low.toFixed(2)),close:parseFloat(close.toFixed(2)),volume:volume})}return data}
+async function fetchEODHD(ticker){
+    // Always refresh API key from input before fetching
+    apiKey=document.getElementById('apiKey').value.trim();
+    localStorage.setItem('eodhdApiKey',apiKey);
+
+    if(!apiKey){alert('Please paste your EODHD API key first!');setDataMode('mock');return null}
+    if(apiCallCount>=20){alert('Free plan limit reached (20 calls/day). Upgrade at eodhd.com or try again tomorrow.');setDataMode('mock');return null}
+    checkCallReset();
+    if(apiCallCount>=20){alert('Free plan limit reached (20 calls/day).');setDataMode('mock');return null}
+
+    const fromDate=document.getElementById('fromDate').value;
+    const toDate=document.getElementById('toDate').value;
+    const targetUrl=`https://eodhd.com/api/eod/${ticker}?api_token=${apiKey}&from=${fromDate}&to=${toDate}&period=d&fmt=json`;
+
+    // Try direct fetch first, fallback to CORS proxy if blocked
+    let r;
+    try{
+        r=await fetch(targetUrl);
+    }catch(e){
+        console.log('Direct fetch blocked by CORS, trying proxy...');
+        const proxyUrl=`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+        r=await fetch(proxyUrl);
+    }
+
+    try{
+        if(!r.ok){const err=await r.text();throw new Error('HTTP '+r.status+': '+err)}
+        const j=await r.json();
+        if(!Array.isArray(j)||j.length===0){throw new Error('No data returned. Check ticker format (must end in .XPHS) and date range.')}
+        incrementCallCount();
+        return j.map(d=>({time:d.date,open:d.open,high:d.high,low:d.low,close:d.close,volume:d.volume}))
+    }catch(e){
+        alert('EODHD API Error: '+e.message+'\n\nFalling back to demo data. Check your API key and ticker format.');
+        setDataMode('mock');
+        return null
+    }
+}
+function calculateSMA(data,period){const r=[];for(let i=0;i<data.length;i++){if(i<period-1){r.push(null);continue}let s=0;for(let j=0;j<period;j++)s+=data[i-j].close;r.push(parseFloat((s/period).toFixed(2)))}return r}
+function calculateEMA(data,period){const r=[],m=2/(period+1);let ema=data[0].close;for(let i=0;i<data.length;i++){if(i===0)r.push(parseFloat(ema.toFixed(2)));else{ema=(data[i].close-ema)*m+ema;r.push(parseFloat(ema.toFixed(2)))}}return r}
+function calculateRSI(data,period=14){const r=[];for(let i=0;i<data.length;i++){if(i<period){r.push(null);continue}let g=0,l=0;for(let j=1;j<=period;j++){const c=data[i-j+1].close-data[i-j].close;if(c>0)g+=c;else l+=Math.abs(c)}const ag=g/period,al=l/period;if(al===0)r.push(100);else r.push(parseFloat((100-(100/(1+ag/al))).toFixed(1)))}return r}
+function calculateVolumeSMA(data,period=20){const r=[];for(let i=0;i<data.length;i++){if(i<period-1){r.push(null);continue}let s=0;for(let j=0;j<period;j++)s+=data[i-j].volume;r.push(Math.floor(s/period))}return r}
+function initChart(){const c=document.getElementById('chart');c.innerHTML='';chartInstance=LightweightCharts.createChart(c,{layout:{background:{color:'transparent'},textColor:'#94a3b8'},grid:{vertLines:{color:'rgba(255,255,255,0.03)'},horzLines:{color:'rgba(255,255,255,0.03)'}},crosshair:{mode:LightweightCharts.CrosshairMode.Normal,vertLine:{color:'rgba(34,211,238,0.3)',width:1},horzLine:{color:'rgba(34,211,238,0.3)',width:1}},rightPriceScale:{borderColor:'rgba(255,255,255,0.08)'},timeScale:{borderColor:'rgba(255,255,255,0.08)',timeVisible:false},width:c.clientWidth,height:320});candleSeries=chartInstance.addCandlestickSeries({upColor:'#34d399',downColor:'#fb7185',borderUpColor:'#34d399',borderDownColor:'#fb7185',wickUpColor:'#34d399',wickDownColor:'#fb7185'});ema20Series=chartInstance.addLineSeries({color:'#a78bfa',lineWidth:2,title:'20 EMA'});sma50Series=chartInstance.addLineSeries({color:'#22d3ee',lineWidth:2,title:'50 SMA'});window.addEventListener('resize',()=>{if(chartInstance)chartInstance.applyOptions({width:c.clientWidth})})}
+function updateTicker(){currentTicker=document.getElementById('tickerSelect').value;document.getElementById('customTicker').value=''}
+function updateCustomTicker(){const v=document.getElementById('customTicker').value.toUpperCase();if(v)currentTicker=v}
+function toggleMA(){maLinesVisible=!maLinesVisible;if(ema20Series)ema20Series.applyOptions({visible:maLinesVisible});if(sma50Series)sma50Series.applyOptions({visible:maLinesVisible})}
+async function loadStockData(){saveApiKey();document.getElementById('displayPrice').textContent='₱—';document.getElementById('displayChange').textContent='Loading...';if(dataMode==='live'){const ed=await fetchEODHD(currentTicker);if(ed)currentData=ed;else currentData=generateMockData(currentTicker,300)}else currentData=generateMockData(currentTicker,300);const ema20=calculateEMA(currentData,20),sma50=calculateSMA(currentData,50),rsi=calculateRSI(currentData,14),volSMA=calculateVolumeSMA(currentData,20);currentData.forEach((d,i)=>{d.ema20=ema20[i];d.sma50=sma50[i];d.rsi=rsi[i];d.volSMA=volSMA[i]});const last=currentData[currentData.length-1],prev=currentData[currentData.length-2];const change=prev?((last.close-prev.close)/prev.close*100):0;const cs=(change>=0?'+':'')+change.toFixed(2)+'%';const displayName=currentTicker.replace('.XPHS','');document.getElementById('displayTicker').textContent='PSE:'+displayName;document.getElementById('displayPrice').textContent='₱'+last.close.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});document.getElementById('displayPrice').className='price '+(change>=0?'up':'down');document.getElementById('displayChange').textContent=cs;document.getElementById('displayChange').className='change '+(change>=0?'up':'down');document.getElementById('statEMA20').textContent=last.ema20?last.ema20.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';document.getElementById('statSMA50').textContent=last.sma50?last.sma50.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';document.getElementById('statRSI').textContent=last.rsi?last.rsi.toFixed(1):'—';document.getElementById('statVol').textContent=last.volSMA?((last.volume/last.volSMA)*100).toFixed(0)+'%':'—';if(!chartInstance)initChart();candleSeries.setData(currentData.map(d=>({time:d.time,open:d.open,high:d.high,low:d.low,close:d.close})));ema20Series.setData(currentData.filter(d=>d.ema20!==null).map(d=>({time:d.time,value:d.ema20})));sma50Series.setData(currentData.filter(d=>d.sma50!==null).map(d=>({time:d.time,value:d.sma50})));chartInstance.timeScale().fitContent();detectSignal();updatePriceTable()}
+function detectSignal(){const last=currentData[currentData.length-1],prev=currentData[currentData.length-2];const se=document.getElementById('currentSignal'),re=document.getElementById('signalReason');if(!last.ema20||!last.sma50||!prev||!prev.ema20||!prev.sma50){se.className='signal-badge signal-hold';se.textContent='⏳ Insufficient Data';re.textContent='Need more historical data to calculate moving averages.';return}const crossedUp=prev.ema20<=prev.sma50&&last.ema20>last.sma50;const crossedDown=prev.ema20>=prev.sma50&&last.ema20<last.sma50;if(crossedUp){se.className='signal-badge signal-buy';se.textContent='🟢 BUY SIGNAL';re.innerHTML='<strong>20 EMA ('+last.ema20.toFixed(2)+')</strong> crossed <strong>ABOVE</strong> <strong>50 SMA ('+last.sma50.toFixed(2)+')</strong> on '+last.time+'. Bullish momentum. RSI: '+(last.rsi?last.rsi.toFixed(1):'N/A')+'.'}else if(crossedDown){se.className='signal-badge signal-sell';se.textContent='🔴 SELL SIGNAL';re.innerHTML='<strong>20 EMA ('+last.ema20.toFixed(2)+')</strong> crossed <strong>BELOW</strong> <strong>50 SMA ('+last.sma50.toFixed(2)+')</strong> on '+last.time+'. Bearish momentum. RSI: '+(last.rsi?last.rsi.toFixed(1):'N/A')+'.'}else{const above=last.ema20>last.sma50;se.className='signal-badge signal-hold';se.textContent='⏸️ HOLD — No Crossover';re.innerHTML='20 EMA is '+(above?'above':'below')+' 50 SMA. Trend is '+(above?'bullish':'bearish')+' but no new crossover signal today.'}}
+function updatePriceTable(){const tb=document.getElementById('priceTableBody');const recent=currentData.slice(-10).reverse();tb.innerHTML=recent.map((d,i)=>{let s='—';if(d.ema20&&d.sma50){const idx=currentData.indexOf(d);if(idx>0){const p=currentData[idx-1];if(p.ema20<=p.sma50&&d.ema20>d.sma50)s='<span class="signal-badge signal-buy" style="font-size:.7rem;padding:2px 8px">BUY</span>';else if(p.ema20>=p.sma50&&d.ema20<d.sma50)s='<span class="signal-badge signal-sell" style="font-size:.7rem;padding:2px 8px">SELL</span>';else s='<span style="color:var(--text-muted);font-size:.75rem">—</span>'}}return'<tr><td>'+d.time+'</td><td>₱'+d.open.toLocaleString('en-US',{minimumFractionDigits:2})+'</td><td>₱'+d.high.toLocaleString('en-US',{minimumFractionDigits:2})+'</td><td>₱'+d.low.toLocaleString('en-US',{minimumFractionDigits:2})+'</td><td style="font-weight:700">₱'+d.close.toLocaleString('en-US',{minimumFractionDigits:2})+'</td><td>'+(d.volume/1000).toFixed(0)+'K</td><td style="color:var(--accent-purple)">'+(d.ema20?d.ema20.toLocaleString('en-US',{minimumFractionDigits:2}):'—')+'</td><td style="color:var(--accent-cyan)">'+(d.sma50?d.sma50.toLocaleString('en-US',{minimumFractionDigits:2}):'—')+'</td><td>'+s+'</td></tr>'}).join('')}
+async function runBacktest(){saveApiKey();const ticker=document.getElementById('btTicker').value,fastPeriod=parseInt(document.getElementById('fastPeriod').value),slowPeriod=parseInt(document.getElementById('slowPeriod').value),maType=document.getElementById('maType').value,initialCapital=parseFloat(document.getElementById('initialCapital').value),positionPct=parseFloat(document.getElementById('positionSize').value)/100,stopLossPct=parseFloat(document.getElementById('stopLoss').value)/100,takeProfitPct=parseFloat(document.getElementById('takeProfit').value)/100;let data;if(dataMode==='live'){const ed=await fetchEODHD(ticker);data=ed||generateMockData(ticker,500)}else data=generateMockData(ticker,500);let fastMA,slowMA;if(maType==='EMA'){fastMA=calculateEMA(data,fastPeriod);slowMA=calculateEMA(data,slowPeriod)}else{fastMA=calculateSMA(data,fastPeriod);slowMA=calculateSMA(data,slowPeriod)}let capital=initialCapital,equity=[initialCapital],trades=[],position=null,maxEquity=initialCapital,maxDrawdown=0;for(let i=slowPeriod+1;i<data.length;i++){const today=data[i],yesterday=data[i-1],fToday=fastMA[i],sToday=slowMA[i],fYesterday=fastMA[i-1],sYesterday=slowMA[i-1];if(position){if(today.low<=position.stopLoss){const pnl=(position.stopLoss-position.entryPrice)*position.shares;capital+=position.stopLoss*position.shares;trades.push({entryDate:position.entryDate,exitDate:today.time,entryPrice:position.entryPrice,exitPrice:position.stopLoss,shares:position.shares,pnl:pnl,pnlPct:(position.stopLoss-position.entryPrice)/position.entryPrice*100,result:'LOSS'});position=null}else if(today.high>=position.takeProfit){const pnl=(position.takeProfit-position.entryPrice)*position.shares;capital+=position.takeProfit*position.shares;trades.push({entryDate:position.entryDate,exitDate:today.time,entryPrice:position.entryPrice,exitPrice:position.takeProfit,shares:position.shares,pnl:pnl,pnlPct:(position.takeProfit-position.entryPrice)/position.entryPrice*100,result:'WIN'});position=null}else if(fYesterday>=sYesterday&&fToday<sToday){const pnl=(today.close-position.entryPrice)*position.shares;capital+=today.close*position.shares;trades.push({entryDate:position.entryDate,exitDate:today.time,entryPrice:position.entryPrice,exitPrice:today.close,shares:position.shares,pnl:pnl,pnlPct:(today.close-position.entryPrice)/position.entryPrice*100,result:pnl>=0?'WIN':'LOSS'});position=null}}else if(!position&&fYesterday<=sYesterday&&fToday>sToday){const investAmount=capital*positionPct;const shares=Math.floor(investAmount/today.close);if(shares>0){position={entryPrice:today.close,shares:shares,entryDate:today.time,stopLoss:today.close*(1-stopLossPct),takeProfit:today.close*(1+takeProfitPct)};capital-=shares*today.close}}let currentEquity=capital;if(position)currentEquity+=position.shares*today.close;equity.push(currentEquity);if(currentEquity>maxEquity)maxEquity=currentEquity;const dd=(maxEquity-currentEquity)/maxEquity*100;if(dd>maxDrawdown)maxDrawdown=dd}if(position){const last=data[data.length-1];const pnl=(last.close-position.entryPrice)*position.shares;capital+=last.close*position.shares;trades.push({entryDate:position.entryDate,exitDate:last.time,entryPrice:position.entryPrice,exitPrice:last.close,shares:position.shares,pnl:pnl,pnlPct:(last.close-position.entryPrice)/position.entryPrice*100,result:pnl>=0?'WIN':'LOSS'})}const totalReturn=((capital-initialCapital)/initialCapital*100);const wins=trades.filter(t=>t.result==='WIN').length;const winRate=trades.length>0?(wins/trades.length*100):0;const retEl=document.getElementById('btReturn');retEl.textContent=(totalReturn>=0?'+':'')+totalReturn.toFixed(2)+'%';retEl.className='result-value '+(totalReturn>=0?'positive':'negative');document.getElementById('btReturnSub').textContent='₱'+initialCapital.toLocaleString()+' → ₱'+Math.floor(capital).toLocaleString();const wrEl=document.getElementById('btWinRate');wrEl.textContent=winRate.toFixed(1)+'%';wrEl.className='result-value '+(winRate>=50?'positive':'negative');document.getElementById('btWinRateSub').textContent=wins+' wins / '+(trades.length-wins)+' losses';document.getElementById('btTrades').textContent=trades.length;document.getElementById('btTradesSub').textContent='Over '+data.length+' trading days';const ddEl=document.getElementById('btDrawdown');ddEl.textContent='-'+maxDrawdown.toFixed(2)+'%';ddEl.className='result-value negative';document.getElementById('btDrawdownSub').textContent='Peak to trough decline';renderEquityChart(equity,data);renderTradeLog(trades)}
+function renderEquityChart(equity,data){const c=document.getElementById('equityChart');c.innerHTML='';const chart=LightweightCharts.createChart(c,{layout:{background:{color:'transparent'},textColor:'#94a3b8'},grid:{vertLines:{color:'rgba(255,255,255,0.03)'},horzLines:{color:'rgba(255,255,255,0.03)'}},rightPriceScale:{borderColor:'rgba(255,255,255,0.08)'},timeScale:{borderColor:'rgba(255,255,255,0.08)'},width:c.clientWidth,height:250});const series=chart.addAreaSeries({topColor:'rgba(34,211,238,0.3)',bottomColor:'rgba(34,211,238,0.02)',lineColor:'#22d3ee',lineWidth:2});const cd=equity.map((v,i)=>({time:data[Math.min(i,data.length-1)].time,value:parseFloat(v.toFixed(2))}));series.setData(cd);chart.timeScale().fitContent();window.addEventListener('resize',()=>{chart.applyOptions({width:c.clientWidth})})}
+function renderTradeLog(trades){const tb=document.getElementById('tradeLogBody');if(trades.length===0){tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:30px">No trades generated with these settings</td></tr>';return}tb.innerHTML=trades.map((t,i)=>'<tr><td style="color:var(--text-muted)">'+(i+1)+'</td><td>'+t.entryDate+'</td><td>'+t.exitDate+'</td><td>₱'+t.entryPrice.toLocaleString('en-US',{minimumFractionDigits:2})+'</td><td>₱'+t.exitPrice.toLocaleString('en-US',{minimumFractionDigits:2})+'</td><td>'+t.shares.toLocaleString()+'</td><td style="color:'+(t.pnl>=0?'var(--accent-green)':'var(--accent-red)')+';font-weight:600">'+(t.pnl>=0?'+':'')+'₱'+Math.floor(t.pnl).toLocaleString()+'</td><td style="color:'+(t.pnlPct>=0?'var(--accent-green)':'var(--accent-red)')+';font-weight:600">'+(t.pnlPct>=0?'+':'')+t.pnlPct.toFixed(2)+'%</td><td><span class="signal-badge '+(t.result==='WIN'?'signal-buy':'signal-sell')+'" style="font-size:.7rem;padding:2px 8px">'+t.result+'</span></td></tr>').join('')}
+</script>
+</body>
+</html>
